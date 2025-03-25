@@ -17,59 +17,69 @@ An automated fishing bot for [Fishing Frenzy](https://fishingfrenzy.co/) that in
 
 ## 🚀 Installation
 
-1. Clone the repository:
+### **Prerequisites**
+Before running the commands, make sure that:
+1. **Node.js** is installed:
+- Check with:
 ```bash
-git clone https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main.git
-cd FishingFrenzy-Auto-Bot-main
+node -v
+```
+- If it is not installed, download and install it from [nodejs.org](https://nodejs.org) (I recommend the LTS version).
+2. **Git** is installed:
+- Check with:
+```bash
+git --version
+```
+- If it is not installed, download it from [git-scm.com](https://git-scm.com).
+
+---
+### **Commands to Install Everything and Run**
+
+#### **1. Clone the Repository**
+If you don't already have the repository locally:
+```bash
+git clone https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot.git
+cd FishingFrenzy-Auto-Bot
 ```
 
-2. Install dependencies:
+#### **2. Install the Dependencies**
+The `package.json` lists the `axios`, `chalk` and `ws` dependencies. `readline` comes with Node.js, so you don't need to install it separately. Use the command below to install everything:
 ```bash
 npm install
 ```
 
-3. Create a `token.txt` file in the root directory and paste your Fishing Frenzy authentication token:
+#### **3. (Optional) Check Installed Dependencies**
+To confirm that everything is installed:
 ```bash
-echo "YOUR_TOKEN_HERE" > token.txt
+npm list --depth=0
+```
+You will see something like:
+```
+fishingfrenzy-auto-bot@1.5.0
+├── axios@1.6.7
+├── chalk@4.1.2
+└── ws@8.16.0
 ```
 
-## 💻 Usage
-
-Start the bot:
+#### **4. Run the Bot**
+After installing the dependencies, run the bot with the script defined in `package.json`:
 ```bash
 npm start
 ```
 
-## ⚙️ Configuration
+- The bot will display the banner and ask for the token in the terminal.
+- Type your Fishing Frenzy token and press Enter.
 
-You can customize the bot's behavior by modifying the configuration variables in `index.js`:
+---
 
-```javascript
-const config = {
-  authToken: authToken,
-  apiBaseUrl: 'https://api.fishingfrenzy.co',
-  wsUrl: 'wss://api.fishingfrenzy.co',
-  fishingRange: 'mid_range', // default: mid_range
-  is5x: false,
-  delayBetweenFishing: 5000,
-  retryDelay: 30000,
-  maxRetries: 5,
-  energyRefreshHours: 24, // Energy refreshes every 24 hours
-  // Energy cost for each fishing range
-  rangeCosts: {
-    'short_range': 1,
-    'mid_range': 2,
-    'long_range': 3
-  }
-};
+### **Summary of Commands in Sequence**
+Here is the complete sequence in a single block, to copy and paste if you prefer:
+```bash
+git clone https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot.git
+cd FishingFrenzy-Auto-Bot
+npm install
+npm start
 ```
-
-## 📊 Energy Management
-
-The bot intelligently selects fishing ranges based on your available energy:
-- `short_range`: Costs 1 energy
-- `mid_range`: Costs 2 energy
-- `long_range`: Costs 3 energy
 
 When energy is depleted, the bot will wait for the energy refresh time (default: 24 hours).
 
