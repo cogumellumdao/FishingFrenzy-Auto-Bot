@@ -19,8 +19,8 @@ An automated fishing bot for [Fishing Frenzy](https://fishingfrenzy.co/) that in
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/airdropinsiders/FishingFrenzy-Auto-Bot.git
-cd FishingFrenzy-Auto-Bot
+git clone https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main.git
+cd FishingFrenzy-Auto-Bot-main
 ```
 
 2. Install dependencies:
