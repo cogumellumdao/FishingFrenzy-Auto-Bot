@@ -1,34 +1,33 @@
 {
-    "name": "fishingfrenzy-auto-bot",
-    "version": "1.5.0",
-    "description": "An automated bot for Fishing Frenzy with energy-aware fishing range selection",
-    "main": "index.js",
-    "scripts": {
-      "start": "node index.js",
-      "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main.git"
-    },
-    "keywords": [
-      "fishing",
-      "frenzy",
-      "bot",
-      "automation",
-      "web3",
-      "game"
-    ],
-    "author": "Airdrop Insiders",
-    "license": "MIT",
-    "bugs": {
-      "url": "https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main/issues"
-    },
-    "homepage": "https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main#readme",
-    "dependencies": {
-      "axios": "^1.6.7",
-      "chalk": "^4.1.2",
-      "fs": "^0.0.1-security",
-      "ws": "^8.16.0"
-    }
+  "name": "fishingfrenzy-auto-bot",
+  "version": "1.5.0",
+  "description": "An automated bot for Fishing Frenzy with energy-aware fishing range selection",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot.git"
+  },
+  "keywords": [
+    "fishing",
+    "frenzy",
+    "bot",
+    "automation",
+    "web3",
+    "game"
+  ],
+  "author": "Airdrop Insiders",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot/issues"
+  },
+  "homepage": "https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot#readme",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "chalk": "^4.1.2",
+    "ws": "^8.16.0"
   }
+}
