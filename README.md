@@ -1,5 +1,7 @@
 # 🎣 Fishing Frenzy Auto Bot
 
+![Design sem nome](https://github.com/user-attachments/assets/e334243a-815f-4593-8e81-6908350c22fa)
+
 An automated fishing bot for [Fishing Frenzy](https://fishingfrenzy.co/) that intelligently manages energy and fishing ranges.
 
 ## ✨ Features
