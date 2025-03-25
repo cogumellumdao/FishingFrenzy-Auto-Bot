@@ -15,6 +15,20 @@ An automated fishing bot for [Fishing Frenzy](https://fishingfrenzy.co/) that in
 - Node.js (v14 or higher)
 - Valid Fishing Frenzy authentication token
 
+  ### **Complete Step-by-Step**
+
+## **1. Open the Command Prompt (CMD)**
+1. **Method 1: Using the Start Menu**:
+- Click the **Start** button (the Windows icon in the lower left corner).
+- Type `cmd` in the search bar.
+- Press **Enter** or click on "Command Prompt" when it appears.
+2. **Method 2: Using Run**:
+- Press the **Windows + R** keys together.
+- In the window that opens, type `cmd` and press **Enter**.
+3. A black window (CMD) will open, ready to receive commands.
+  ![image](https://github.com/user-attachments/assets/8472c33d-05fe-430e-9f15-1a765c097c0a)
+
+
 ## 🚀 Installation
 
 ### **Prerequisites**
