@@ -6,8 +6,13 @@ const fs = require('fs');
 let authToken;
 try {
   authToken = fs.readFileSync('token.txt', 'utf8').trim();
+  if (!authToken) {
+    throw new Error('Token is empty or not found in token.txt');
+  }
+  console.log(chalk.green('Token loaded successfully from token.txt'));
+  console.log(`Using auth token: ${chalk.cyan(authToken.substring(0, 10))}... (shortened for security)`);
 } catch (error) {
-  console.error(' Failed to read token.txt:', error.message);
+  console.error(chalk.red(' Failed to read token.txt:'), error.message);
   process.exit(1);
 }
 
@@ -15,12 +20,12 @@ const config = {
   authToken: authToken,
   apiBaseUrl: 'https://api.fishingfrenzy.co',
   wsUrl: 'wss://api.fishingfrenzy.co',
-  fishingRange: 'mid_range', 
+  fishingRange: 'mid_range',
   is5x: false,
   delayBetweenFishing: 5000,
   retryDelay: 30000,
   maxRetries: 5,
-  energyRefreshHours: 24, 
+  energyRefreshHours: 24,
   rangeCosts: {
     'short_range': 1,
     'mid_range': 2,
@@ -31,7 +36,7 @@ const config = {
 const headers = {
   'accept': 'application/json',
   'accept-language': 'en-US,en;q=0.6',
-  'authorization': `Bearer ${config.authToken}`, 
+  'authorization': `Bearer ${config.authToken}`,
   'content-type': 'application/json',
   'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Brave";v="134"',
   'sec-ch-ua-mobile': '?0',
@@ -50,12 +55,12 @@ let currentEnergy = 0;
 let retryCount = 0;
 let energyRefreshTime = null;
 
-const log = (msg) => console.log(msg); 
-const logSuccess = (msg) => console.log(chalk.green(`${msg}`)); 
-const logInfo = (msg) => console.log(`${msg}`); 
-const logWarn = (msg) => console.log(chalk.yellow(`${msg}`)); 
-const logError = (msg) => console.log(chalk.red(`${msg}`)); 
-const logHighlight = (label, value) => console.log(`${label}: ${chalk.cyan(value)}`); 
+const log = (msg) => console.log(msg);
+const logSuccess = (msg) => console.log(chalk.green(`${msg}`));
+const logInfo = (msg) => console.log(`${msg}`);
+const logWarn = (msg) => console.log(chalk.yellow(`${msg}`));
+const logError = (msg) => console.log(chalk.red(`${msg}`));
+const logHighlight = (label, value) => console.log(`${label}: ${chalk.cyan(value)}`);
 
 function displayBanner() {
   const banner = [
@@ -68,23 +73,23 @@ function displayBanner() {
 
 function displayProfileInfo(data) {
   logSuccess('Profile Loaded Successfully!');
-  logInfo(` User ID: ${data.userId || 'N/A'}`); 
-  log(` Gold: ${data.gold || 0}`); 
-  logHighlight(' Energy', `${data.energy || 0}`); 
-  log(` Fish Points: ${data.fishPoint || 0}`); 
-  log(` EXP: ${data.exp || 0}`); 
+  logInfo(` User ID: ${data.userId || 'N/A'}`);
+  log(` Gold: ${data.gold || 0}`);
+  logHighlight(' Energy', `${data.energy || 0}`);
+  log(` Fish Points: ${data.fishPoint || 0}`);
+  log(` EXP: ${data.exp || 0}`);
 }
 
 function formatTimeRemaining(milliseconds) {
   const seconds = Math.floor(milliseconds / 1000) % 60;
   const minutes = Math.floor(milliseconds / (1000 * 60)) % 60;
   const hours = Math.floor(milliseconds / (1000 * 60 * 60));
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`; 
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
 async function checkInventory() {
   try {
-    const response = await axios.get(`${config.apiBaseUrl}/v1/inventory`, { headers }); 
+    const response = await axios.get(`${config.apiBaseUrl}/v1/inventory`, { headers });
     currentEnergy = response.data.energy || 0;
     displayProfileInfo(response.data);
 
@@ -98,9 +103,14 @@ async function checkInventory() {
       return false;
     }
   } catch (error) {
-    logError(`Failed to check inventory: ${error.message}`); 
-    if (error.response && error.response.status === 503) {
-      logWarn('Server temporarily unavailable, waiting before retry...');
+    if (error.response && error.response.status === 401) {
+      logError('Authentication failed: Invalid or expired token (HTTP 401). Please update token.txt.');
+      process.exit(1);
+    } else {
+      logError(`Failed to check inventory: ${error.message}`);
+      if (error.response && error.response.status === 503) {
+        logWarn('Server temporarily unavailable, waiting before retry...');
+      }
     }
     return false;
   }
@@ -108,23 +118,19 @@ async function checkInventory() {
 
 function selectFishingRange() {
   const availableRanges = [];
-  if (currentEnergy >= config.rangeCosts['long_range']) {
-    availableRanges.push('long_range');
-  }
-  if (currentEnergy >= config.rangeCosts['mid_range']) {
-    availableRanges.push('mid_range');
-  }
-  if (currentEnergy >= config.rangeCosts['short_range']) {
-    availableRanges.push('short_range');
-  }
+  if (currentEnergy >= config.rangeCosts['long_range']) availableRanges.push('long_range');
+  if (currentEnergy >= config.rangeCosts['mid_range']) availableRanges.push('mid_range');
+  if (currentEnergy >= config.rangeCosts['short_range']) availableRanges.push('short_range');
+  
   if (availableRanges.length === 0) {
     logWarn("No fishing ranges available with current energy!");
     return 'short_range';
   }
+  
   const selectedRange = availableRanges[Math.floor(Math.random() * availableRanges.length)];
   if (config.fishingRange !== selectedRange) {
     config.fishingRange = selectedRange;
-    logInfo(`Selected fishing range: ${chalk.cyan(config.fishingRange)} (Cost: ${config.rangeCosts[config.fishingRange]} energy)`); 
+    logInfo(`Selected fishing range: ${chalk.cyan(config.fishingRange)} (Cost: ${config.rangeCosts[config.fishingRange]} energy)`);
   }
   return selectedRange;
 }
@@ -158,13 +164,11 @@ async function fish() {
     const interpolationSteps = 30;
     let endSent = false;
 
-    wsConnection = new WebSocket(`${config.wsUrl}/?token=${config.authToken}`); 
+    wsConnection = new WebSocket(`${config.wsUrl}/?token=${config.authToken}`);
 
     const timeout = setTimeout(() => {
       logWarn('Fishing timeout - closing connection');
-      if (wsConnection && wsConnection.readyState === WebSocket.OPEN) {
-        wsConnection.close();
-      }
+      if (wsConnection && wsConnection.readyState === WebSocket.OPEN) wsConnection.close();
       resolve(false);
     }, 60000);
 
@@ -227,19 +231,17 @@ async function fish() {
           gameSuccess = message.success;
           if (gameSuccess) {
             const fish = message.catchedFish.fishInfo;
-            logSuccess(`Successfully caught a ${chalk.cyan(fish.fishName)} (quality: ${fish.quality}) worth ${fish.sellPrice} coins and ${fish.expGain} XP!`); 
-            logInfo(`⭐ Current XP: ${message.catchedFish.currentExp}/${message.catchedFish.expToNextLevel}`); 
-            logHighlight(`⚡ Remaining Energy`, `${message.catchedFish.energy}`); 
-            log(`💰 Gold: ${message.catchedFish.gold}`); 
-            log(`🐟 Fish Points: ${message.catchedFish.fishPoint}`); 
-            
+            logSuccess(`Successfully caught a ${chalk.cyan(fish.fishName)} (quality: ${fish.quality}) worth ${fish.sellPrice} coins and ${fish.expGain} XP!`);
+            logInfo(`⭐ Current XP: ${message.catchedFish.currentExp}/${message.catchedFish.expToNextLevel}`);
+            logHighlight(`⚡ Remaining Energy`, `${message.catchedFish.energy}`);
+            log(`💰 Gold: ${message.catchedFish.gold}`);
+            log(`🐟 Fish Points: ${message.catchedFish.fishPoint}`);
             currentEnergy = message.catchedFish.energy;
           } else {
             logError('Failed to catch fish');
-            logHighlight(`⚡ Remaining Energy`, `${message.catchedFish.energy}`); 
-            log(`💰 Gold: ${message.catchedFish.gold}`); 
-            log(`🐟 Fish Points: ${message.catchedFish.fishPoint}`); 
-            
+            logHighlight(`⚡ Remaining Energy`, `${message.catchedFish.energy}`);
+            log(`💰 Gold: ${message.catchedFish.gold}`);
+            log(`🐟 Fish Points: ${message.catchedFish.fishPoint}`);
             currentEnergy = message.catchedFish.energy;
           }
           clearTimeout(timeout);
@@ -247,12 +249,12 @@ async function fish() {
           resolve(gameSuccess);
         }
       } catch (parseError) {
-        logError(`Error parsing message: ${parseError.message}`); 
+        logError(`Error parsing message: ${parseError.message}`);
       }
     });
 
     wsConnection.on('error', (error) => {
-      logError(`WebSocket error: ${error.message}`); 
+      logError(`WebSocket error: ${error.message}`);
       clearTimeout(timeout);
       reject(error);
     });
@@ -272,7 +274,7 @@ async function showEnergyCountdown() {
   logWarn('Out of energy. Waiting for energy to refresh...');
   while (new Date() < energyRefreshTime) {
     const timeRemaining = energyRefreshTime - new Date();
-    process.stdout.write(`\r Energy will refresh in: ${chalk.cyan(formatTimeRemaining(timeRemaining))}`); 
+    process.stdout.write(`\r Energy will refresh in: ${chalk.cyan(formatTimeRemaining(timeRemaining))}`);
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
   console.log('\n');
@@ -294,45 +296,45 @@ async function runBot() {
 
       selectFishingRange();
 
-      logInfo(`🎣 Starting fishing attempt with ${chalk.cyan(config.fishingRange)}... (Energy cost: ${config.rangeCosts[config.fishingRange]})`); 
+      logInfo(`🎣 Starting fishing attempt with ${chalk.cyan(config.fishingRange)}... (Energy cost: ${config.rangeCosts[config.fishingRange]})`);
       const success = await fish();
 
       if (success) {
-        logSuccess(`Fishing attempt completed successfully. Waiting ${config.delayBetweenFishing / 1000} seconds...`); 
+        logSuccess(`Fishing attempt completed successfully. Waiting ${config.delayBetweenFishing / 1000} seconds...`);
         await new Promise(resolve => setTimeout(resolve, config.delayBetweenFishing));
         retryCount = 0;
       } else {
         retryCount++;
         const waitTime = retryCount > config.maxRetries ? config.retryDelay * 3 : config.retryDelay;
-        logWarn(`Fishing attempt failed. Retry ${retryCount}/${config.maxRetries}. Waiting ${waitTime / 1000} seconds...`); 
+        logWarn(`Fishing attempt failed. Retry ${retryCount}/${config.maxRetries}. Waiting ${waitTime / 1000} seconds...`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     } catch (error) {
-      logError(`Error during fishing attempt: ${error.message}`); 
+      logError(`Error during fishing attempt: ${error.message}`);
       retryCount++;
       const waitTime = retryCount > config.maxRetries ? 60000 : 10000;
-      logWarn(`Error occurred. Retry ${retryCount}/${config.maxRetries}. Waiting ${waitTime / 1000} seconds...`); 
+      logWarn(`Error occurred. Retry ${retryCount}/${config.maxRetries}. Waiting ${waitTime / 1000} seconds...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
 }
 
 process.on('uncaughtException', (error) => {
-  logError(`Uncaught exception: ${error}`); 
+  logError(`Uncaught exception: ${error}`);
   logWarn('Bot will restart in 1 minute...');
   setTimeout(() => runBot(), 60000);
 });
 
-displayBanner(); 
+displayBanner();
 logInfo('------------------------------------------------------');
-log(`Fishing ranges available:`); 
-log(`- short_range: ${config.rangeCosts['short_range']} energy`); 
-log(`- mid_range: ${config.rangeCosts['mid_range']} energy`); 
-log(`- long_range: ${config.rangeCosts['long_range']} energy`); 
-log(`Retries: ${config.maxRetries}, Delay between fishing: ${config.delayBetweenFishing}ms`); 
-log(`Energy refresh period: ${config.energyRefreshHours} hours`); 
+log(`Fishing ranges available:`);
+log(`- short_range: ${config.rangeCosts['short_range']} energy`);
+log(`- mid_range: ${config.rangeCosts['mid_range']} energy`);
+log(`- long_range: ${config.rangeCosts['long_range']} energy`);
+log(`Retries: ${config.maxRetries}, Delay between fishing: ${config.delayBetweenFishing}ms`);
+log(`Energy refresh period: ${config.energyRefreshHours} hours`);
 logInfo('------------------------------------------------------');
 runBot().catch(error => {
-  logError(`Fatal error in bot: ${error}`); 
+  logError(`Fatal error in bot: ${error}`);
   process.exit(1);
 });
