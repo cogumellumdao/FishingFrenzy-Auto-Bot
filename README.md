@@ -88,9 +88,11 @@ When energy is depleted, the bot will wait for the energy refresh time (default:
 To obtain your authentication token:
 1. Log in to [Fishing Frenzy](https://fishingfrenzy.co/)
 2. Open browser developer tools (F12)
-3. Go to Application tab → Local Storage → fishingfrenzy.co
-4. Copy the token value (without quotes)
-5. Paste it into your `token.txt` file
+   ![image](https://github.com/user-attachments/assets/7ce47265-2d65-4365-8227-86eaabd62ea3)
+
+4. Go to Application tab → Local Storage → fishingfrenzy.co
+5. Copy the token value (without quotes)
+6. Paste it into your `token.txt` file
 
 ## ⚠️ Disclaimer
 
