@@ -91,8 +91,10 @@ To obtain your authentication token:
    ![image](https://github.com/user-attachments/assets/7ce47265-2d65-4365-8227-86eaabd62ea3)
 
 4. Go to Application tab → Local Storage → fishingfrenzy.co
-5. Copy the token value (without quotes)
-6. Paste it into your `token.txt` file
+5. Copy the token value - fishAuth
+   ![image](https://github.com/user-attachments/assets/2c931a04-5e70-4efe-90b5-0f55a3767e76)
+
+copy and save somewhere !! from now on you will only use this TOKEN
 
 ## ⚠️ Disclaimer
 
@@ -101,11 +103,3 @@ This bot is provided for educational purposes only. Use of automated scripts may
 ## 📜 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📧 Contact
-
-For questions or support, please open an issue on the GitHub repository.
