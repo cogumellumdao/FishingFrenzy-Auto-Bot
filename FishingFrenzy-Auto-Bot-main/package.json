@@ -9,7 +9,7 @@
     },
     "repository": {
       "type": "git",
-      "url": "git+https://github.com/airdropinsiders/FishingFrenzy-Auto-Bot.git"
+      "url": "git+https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main.git"
     },
     "keywords": [
       "fishing",
@@ -22,9 +22,9 @@
     "author": "Airdrop Insiders",
     "license": "MIT",
     "bugs": {
-      "url": "https://github.com/airdropinsiders/FishingFrenzy-Auto-Bot/issues"
+      "url": "https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main/issues"
     },
-    "homepage": "https://github.com/airdropinsiders/FishingFrenzy-Auto-Bot#readme",
+    "homepage": "https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main#readme",
     "dependencies": {
       "axios": "^1.6.7",
       "chalk": "^4.1.2",
