@@ -1,23 +1,28 @@
 const axios = require('axios');
 const WebSocket = require('ws');
 const chalk = require('chalk');
-const fs = require('fs');
+const readline = require('readline');
 
-let authToken;
-try {
-  authToken = fs.readFileSync('token.txt', 'utf8').trim();
-  if (!authToken) {
-    throw new Error('Token is empty or not found in token.txt');
-  }
-  console.log(chalk.green('Token loaded successfully from token.txt'));
-  console.log(`Using auth token: ${chalk.cyan(authToken.substring(0, 10))}... (shortened for security)`);
-} catch (error) {
-  console.error(chalk.red(' Failed to read token.txt:'), error.message);
-  process.exit(1);
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+async function getAuthToken() {
+  return new Promise((resolve) => {
+    rl.question(chalk.cyan('Please enter your Fishing Frenzy auth token: '), (token) => {
+      if (!token || token.trim() === '') {
+        console.log(chalk.red('Error: Token cannot be empty. Please try again.'));
+        process.exit(1);
+      }
+      console.log(chalk.green('Token received successfully!'));
+      console.log(`Using auth token: ${chalk.cyan(token.substring(0, 10))}... (shortened for security)`);
+      resolve(token.trim());
+    });
+  });
 }
 
 const config = {
-  authToken: authToken,
   apiBaseUrl: 'https://api.fishingfrenzy.co',
   wsUrl: 'wss://api.fishingfrenzy.co',
   fishingRange: 'mid_range',
@@ -33,23 +38,25 @@ const config = {
   }
 };
 
-const headers = {
-  'accept': 'application/json',
-  'accept-language': 'en-US,en;q=0.6',
-  'authorization': `Bearer ${config.authToken}`,
-  'content-type': 'application/json',
-  'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Brave";v="134"',
-  'sec-ch-ua-mobile': '?0',
-  'sec-ch-ua-platform': '"Windows"',
-  'sec-fetch-dest': 'empty',
-  'sec-fetch-mode': 'cors',
-  'sec-fetch-site': 'same-site',
-  'sec-gpc': '1',
-  'Referer': 'https://fishingfrenzy.co/',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'cache-control': 'no-cache',
-  'pragma': 'no-cache'
-};
+function getHeaders(authToken) {
+  return {
+    'accept': 'application/json',
+    'accept-language': 'en-US,en;q=0.6',
+    'authorization': `Bearer ${authToken}`,
+    'content-type': 'application/json',
+    'sec-ch-ua': '"Chromium";v="134", "Not:A-Brand";v="24", "Brave";v="134"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-site',
+    'sec-gpc': '1',
+    'Referer': 'https://fishingfrenzy.co/',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'cache-control': 'no-cache',
+    'pragma': 'no-cache'
+  };
+}
 
 let currentEnergy = 0;
 let retryCount = 0;
@@ -87,7 +94,7 @@ function formatTimeRemaining(milliseconds) {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-async function checkInventory() {
+async function checkInventory(headers) {
   try {
     const response = await axios.get(`${config.apiBaseUrl}/v1/inventory`, { headers });
     currentEnergy = response.data.energy || 0;
@@ -104,7 +111,7 @@ async function checkInventory() {
     }
   } catch (error) {
     if (error.response && error.response.status === 401) {
-      logError('Authentication failed: Invalid or expired token (HTTP 401). Please update token.txt.');
+      logError('Authentication failed: Invalid or expired token (HTTP 401). Please restart and provide a valid token.');
       process.exit(1);
     } else {
       logError(`Failed to check inventory: ${error.message}`);
@@ -154,7 +161,7 @@ function calculatePositionY(frame, direction) {
   return 426 + frame * 2 - direction * 3;
 }
 
-async function fish() {
+async function fish(authToken) {
   return new Promise((resolve, reject) => {
     let wsConnection = null;
     let gameStarted = false;
@@ -164,7 +171,7 @@ async function fish() {
     const interpolationSteps = 30;
     let endSent = false;
 
-    wsConnection = new WebSocket(`${config.wsUrl}/?token=${config.authToken}`);
+    wsConnection = new WebSocket(`${config.wsUrl}/?token=${authToken}`);
 
     const timeout = setTimeout(() => {
       logWarn('Fishing timeout - closing connection');
@@ -283,11 +290,11 @@ async function showEnergyCountdown() {
   await new Promise(resolve => setTimeout(resolve, 5000));
 }
 
-async function runBot() {
+async function runBot(authToken, headers) {
   logInfo('Starting Fishing Frenzy bot...');
   while (true) {
     try {
-      const hasEnergy = await checkInventory();
+      const hasEnergy = await checkInventory(headers);
 
       if (!hasEnergy) {
         await showEnergyCountdown();
@@ -297,7 +304,7 @@ async function runBot() {
       selectFishingRange();
 
       logInfo(`🎣 Starting fishing attempt with ${chalk.cyan(config.fishingRange)}... (Energy cost: ${config.rangeCosts[config.fishingRange]})`);
-      const success = await fish();
+      const success = await fish(authToken);
 
       if (success) {
         logSuccess(`Fishing attempt completed successfully. Waiting ${config.delayBetweenFishing / 1000} seconds...`);
@@ -325,16 +332,25 @@ process.on('uncaughtException', (error) => {
   setTimeout(() => runBot(), 60000);
 });
 
-displayBanner();
-logInfo('------------------------------------------------------');
-log(`Fishing ranges available:`);
-log(`- short_range: ${config.rangeCosts['short_range']} energy`);
-log(`- mid_range: ${config.rangeCosts['mid_range']} energy`);
-log(`- long_range: ${config.rangeCosts['long_range']} energy`);
-log(`Retries: ${config.maxRetries}, Delay between fishing: ${config.delayBetweenFishing}ms`);
-log(`Energy refresh period: ${config.energyRefreshHours} hours`);
-logInfo('------------------------------------------------------');
-runBot().catch(error => {
-  logError(`Fatal error in bot: ${error}`);
-  process.exit(1);
-});
+async function startBot() {
+  displayBanner();
+  logInfo('------------------------------------------------------');
+  log(`Fishing ranges available:`);
+  log(`- short_range: ${config.rangeCosts['short_range']} energy`);
+  log(`- mid_range: ${config.rangeCosts['mid_range']} energy`);
+  log(`- long_range: ${config.rangeCosts['long_range']} energy`);
+  log(`Retries: ${config.maxRetries}, Delay between fishing: ${config.delayBetweenFishing}ms`);
+  log(`Energy refresh period: ${config.energyRefreshHours} hours`);
+  logInfo('------------------------------------------------------');
+
+  const authToken = await getAuthToken();
+  const headers = getHeaders(authToken);
+
+  runBot(authToken, headers).catch(error => {
+    logError(`Fatal error in bot: ${error}`);
+    rl.close();
+    process.exit(1);
+  });
+}
+
+startBot();
