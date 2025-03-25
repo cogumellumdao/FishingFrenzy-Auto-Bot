@@ -19,7 +19,7 @@ An automated fishing bot for [Fishing Frenzy](https://fishingfrenzy.co/) that in
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/airdropinsiders/FishingFrenzy-Auto-Bot.git
+git clone https://github.com/cogumellumdao/FishingFrenzy-Auto-Bot-main.git
 cd FishingFrenzy-Auto-Bot
 ```
 
@@ -95,5 +95,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📧 Contact
-
-For questions or support, please open an issue on the GitHub repository.
