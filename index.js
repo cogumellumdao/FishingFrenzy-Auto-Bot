@@ -11,13 +11,15 @@ const rl = readline.createInterface({
 async function getAuthToken() {
   return new Promise((resolve) => {
     rl.question(chalk.cyan('Please enter your Fishing Frenzy auth token: '), (token) => {
-      if (!token || token.trim() === '') {
-        console.log(chalk.red('Error: Token cannot be empty. Please try again.'));
+      // Remove espaços, quebras de linha e caracteres não alfanuméricos indesejados
+      const cleanedToken = token.trim().replace(/[^a-zA-Z0-9._-]/g, '');
+      if (!cleanedToken) {
+        console.log(chalk.red('Error: Token cannot be empty or invalid. Please try again.'));
         process.exit(1);
       }
       console.log(chalk.green('Token received successfully!'));
-      console.log(`Using auth token: ${chalk.cyan(token.substring(0, 10))}... (shortened for security)`);
-      resolve(token.trim());
+      console.log(`Using auth token: ${chalk.cyan(cleanedToken.substring(0, 10))}... (shortened for security)`);
+      resolve(cleanedToken);
     });
   });
 }
@@ -39,7 +41,7 @@ const config = {
 };
 
 function getHeaders(authToken) {
-  return {
+  const headers = {
     'accept': 'application/json',
     'accept-language': 'en-US,en;q=0.6',
     'authorization': `Bearer ${authToken}`,
@@ -56,6 +58,8 @@ function getHeaders(authToken) {
     'cache-control': 'no-cache',
     'pragma': 'no-cache'
   };
+  console.log(`Authorization header: ${chalk.cyan(headers.authorization.substring(0, 20))}... (shortened)`); // Log para depuração
+  return headers;
 }
 
 let currentEnergy = 0;
